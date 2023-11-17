@@ -1,0 +1,28 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: get-time-application
+  namespace: argocd
+  labels:
+    name: guestbook
+spec:
+  project: main-project
+  source:
+    repoURL: https://github.com/PedroAlvesBS/go_application.git
+    targetRevision: HEAD
+    path: get-time-api
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: get-time
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+    - Validate=true
+    - CreateNamespace=true
+    - PrunePropagationPolicy=foreground
+    - PruneLast=true
