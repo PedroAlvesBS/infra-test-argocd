@@ -58,7 +58,7 @@ resource "kubectl_manifest" "AppsOfApps" {
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: allApps
+  name: all-apps
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
