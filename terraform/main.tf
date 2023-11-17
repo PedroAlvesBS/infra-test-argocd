@@ -22,7 +22,7 @@ resource "helm_release" "argocd" {
 #                     Project -> Apps of Apps
 #
 ########################################################################
-resource "kubectl_manifest" "AppProject" {
+resource "kubectl_manifest" "app_project" {
     yaml_body = <<YAML
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
@@ -32,12 +32,28 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  # Project description
   description: Testing project
-
   sourceRepos:
   - '*'
-
+  destinations:
+    - namespace: "*"
+      server: https://kubernetes.default.svc
+      name: in-cluster
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  namespaceResourceBlacklist:
+    - group: ''
+      kind: ResourceQuota
+    - group: ''
+      kind: LimitRange
+    - group: ''
+      kind: NetworkPolicy
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  orphanedResources:
+    warn: false
   roles:
   - name: read-only
     description: Read-only privileges to main-project
@@ -46,6 +62,7 @@ spec:
     groups:
     - my-oidc-group
 YAML
+  depends_on = [helm_release.argocd]
 }
 
 ########################################################################
@@ -53,7 +70,7 @@ YAML
 #                    Apps of Apps
 #
 ########################################################################
-resource "kubectl_manifest" "AppsOfApps" {
+resource "kubectl_manifest" "apps_of_apps" {
     yaml_body = <<YAML
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -91,4 +108,5 @@ spec:
         factor: 2
         maxDuration: 3m
 YAML
+  depends_on = [helm_release.argocd]
 }
